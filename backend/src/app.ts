@@ -1,7 +1,4 @@
 import express from 'express'
-import db from './database/models'
-
-db.sequelize.sync()
 
 const app = express()
 
