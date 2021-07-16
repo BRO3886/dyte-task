@@ -1,12 +1,6 @@
 import winston from 'winston'
-// import * as dotenv from 'dotenv'
 
-// dotenv.config()
-
-// var shouldLog: boolean = JSON.parse(<string>process.env.LOG_MODE)
-
-const logger = winston.createLogger({
-  // level: shouldLog ? 'silly' : 'info',
+const log = winston.createLogger({
   level: 'silly',
   format: winston.format.json(),
   transports: [
@@ -21,4 +15,4 @@ const logger = winston.createLogger({
   ],
 })
 
-export default logger
+export default log

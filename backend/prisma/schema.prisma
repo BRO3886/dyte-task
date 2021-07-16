@@ -1,0 +1,24 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URI")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id        String    @unique @default(uuid())
+  username  String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  webhooks  Webhook[]
+}
+
+model Webhook {
+  id      String @unique @default(uuid())
+  url     String
+  admin   Admin  @relation(fields: [adminID], references: [id])
+  adminID String
+}
