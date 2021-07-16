@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client'
 import express from 'express'
 import AdminController from '../controllers/admin/admin'
 import { ApiResponse } from '../controllers/utils'
+import log from '../logging/logger'
+import verifyToken from '../middleware/jwt'
 import { ReqRes } from './interfaces'
 
 const adminRouter = express.Router()
@@ -42,7 +44,13 @@ var loginRoute: ReqRes<AuthReq, ApiResponse> = async (req, res) => {
   res.status(response.code).send(response)
 }
 
+var exampleProtectedRoute: ReqRes<ApiResponse> = async (req, res) => {
+  log.info(req.headers.authorization)
+  res.sendStatus(200)
+}
+
 adminRouter.post('/create', createRoute)
 adminRouter.post('/login', loginRoute)
+adminRouter.use('', verifyToken, exampleProtectedRoute)
 
 export default adminRouter

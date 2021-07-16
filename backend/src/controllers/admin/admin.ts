@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { v4 as uuid4 } from 'uuid'
-import * as jwt from 'jsonwebtoken'
-
+import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import log from '../../logging/logger'
 import { ApiResponse } from '../utils'
