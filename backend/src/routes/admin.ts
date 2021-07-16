@@ -9,14 +9,14 @@ const adminRouter = express.Router()
 const db = new PrismaClient()
 var admin = new AdminController(db)
 
-type AdminCreateReq = { username: string; password: string }
-var createRoute: ReqRes<AdminCreateReq, ApiResponse> = async (req, res) => {
+type AuthReq = { username: string; password: string }
+var createRoute: ReqRes<AuthReq, ApiResponse> = async (req, res) => {
   const username = req.body.username
   const password = req.body.password
 
   if (!username || !password) {
-    res.status(409).send({
-      code: 409,
+    res.status(400).send({
+      code: 400,
       message: 'username or password missing',
     })
     return
@@ -26,6 +26,23 @@ var createRoute: ReqRes<AdminCreateReq, ApiResponse> = async (req, res) => {
   res.status(response.code).send(response)
 }
 
+var loginRoute: ReqRes<AuthReq, ApiResponse> = async (req, res) => {
+  const username = req.body.username
+  const password = req.body.password
+
+  if (!username || !password) {
+    res.status(400).send({
+      code: 400,
+      message: 'username or password missing',
+    })
+    return
+  }
+
+  var response = await admin.login(username!, password!)
+  res.status(response.code).send(response)
+}
+
 adminRouter.post('/create', createRoute)
+adminRouter.post('/login', loginRoute)
 
 export default adminRouter

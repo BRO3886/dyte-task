@@ -1,17 +1,62 @@
 import bcrypt from 'bcryptjs'
 import { v4 as uuid4 } from 'uuid'
+import * as jwt from 'jsonwebtoken'
+
 import { PrismaClient } from '@prisma/client'
 import log from '../../logging/logger'
 import { ApiResponse } from '../utils'
 
 interface AdminFeatures {
   register(username: string, password: string): Promise<ApiResponse>
+  login(username: string, password: string): Promise<ApiResponse>
 }
 
 class AdminController implements AdminFeatures {
   db!: PrismaClient
   constructor(db: PrismaClient) {
     this.db = db
+  }
+
+  async login(username: string, password: string): Promise<ApiResponse> {
+    try {
+      const exists = await this.db.admin.findUnique({
+        where: {
+          username: username,
+        },
+      })
+      if (!exists) {
+        return {
+          code: 404,
+          message: 'User does not exist',
+        }
+      }
+
+      const match = await bcrypt.compare(password, exists.password)
+      if (!match) {
+        return {
+          code: 401,
+          message: 'Incorrect username or password combination',
+        }
+      }
+
+      const token = jwt.sign(
+        {
+          id: exists.id,
+        },
+        process.env.SECRET_KEY!
+      )
+
+      return {
+        code: 200,
+        message: 'logged in',
+        data: {
+          id: exists.id,
+          token: token,
+        },
+      }
+    } catch (err) {
+      return handleError(err)
+    }
   }
 
   async register(username: string, password: string): Promise<ApiResponse> {
@@ -51,12 +96,19 @@ class AdminController implements AdminFeatures {
         },
       }
     } catch (err) {
-      log.error(err)
-      return {
-        code: 500,
-        message: 'not lgtm',
-      }
+      return handleError(err)
     }
+  }
+}
+
+function handleError(err: any): ApiResponse {
+  log.error(err)
+  return {
+    code: 500,
+    message: 'something went wrong',
+    data: {
+      error: err.toString(),
+    },
   }
 }
 
