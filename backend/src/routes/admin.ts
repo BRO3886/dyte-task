@@ -11,7 +11,18 @@ var admin = new AdminController(db)
 
 type AdminCreateReq = { username: string; password: string }
 var createRoute: ReqRes<AdminCreateReq, ApiResponse> = async (req, res) => {
-  var response = await admin.register(req.body.username!, req.body.password!)
+  const username = req.body.username
+  const password = req.body.password
+
+  if (!username || !password) {
+    res.status(409).send({
+      code: 409,
+      message: 'username or password missing',
+    })
+    return
+  }
+
+  var response = await admin.register(username!, password!)
   res.status(response.code).send(response)
 }
 
