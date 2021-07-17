@@ -1,6 +1,7 @@
 import { IncomingMessage } from "http"
 import { Service, ServiceBroker, Context } from "moleculer"
 import ApiGateway from "moleculer-web"
+import jwt from "jsonwebtoken"
 import app from "../src/app"
 import log from "../src/logging/logger"
 
@@ -35,7 +36,7 @@ export default class ApiService extends Service {
             mergeParams: true,
 
             // Enable authentication. Implement the logic into `authenticate` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authentication
-            authentication: false,
+            authentication: true,
 
             // Enable authorization. Implement the logic into `authorize` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authorization
             authorization: false,
@@ -115,46 +116,52 @@ export default class ApiService extends Service {
 
       methods: {
         /**
-				 * Authenticate the request. It checks the `Authorization` token value in the request header.
-				 * Check the token value & resolve the user by the token.
-				 * The resolved user will be available in `ctx.meta.user`
-				 *
-				 * PLEASE NOTE, IT'S JUST AN EXAMPLE IMPLEMENTATION. DO NOT USE IN PRODUCTION!
-				 *
-				 * @param {Context} ctx
-				 * @param {any} route
-				 * @param {IncomingMessage} req
-				 * @returns {Promise}
+         * Authenticate the request. It checks the `Authorization` token value in the request header.
+         * Check the token value & resolve the user by the token.
+         * The resolved user will be available in `ctx.meta.user`
+         *
+         * PLEASE NOTE, IT'S JUST AN EXAMPLE IMPLEMENTATION. DO NOT USE IN PRODUCTION!
+         *
+         * @param {Context} ctx
+         * @param {any} route
+         * @param {IncomingMessage} req
+         * @returns {Promise}
+         */
+        async authenticate(
+          ctx: Context,
+          route: any,
+          req: IncomingMessage
+        ): Promise<any> {
+          // Read the token from header
+          const auth = req.headers.authorization
 
-				async authenticate (ctx: Context, route: any, req: IncomingMessage): Promise < any >  => {
-					// Read the token from header
-					const auth = req.headers.authorization;
+          if (auth && auth.startsWith("Bearer")) {
+            const token = auth.slice(7)
 
-					if (auth && auth.startsWith("Bearer")) {
-						const token = auth.slice(7);
-
-						// Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
-						if (token === "123456") {
-							// Returns the resolved user. It will be set to the `ctx.meta.user`
-							return {
-								id: 1,
-								name: "John Doe",
-							};
-
-						} else {
-							// Invalid token
-							throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN, {
-								error: "Invalid Token",
-							});
-						}
-
-					} else {
-						// No token. Throw an error or do nothing if anonymous access is allowed.
-						// Throw new E.UnAuthorizedError(E.ERR_NO_TOKEN);
-						return null;
-					}
-				},
-				 */
+            // Check the token. Tip: call a service which verify the token. E.g. `accounts.resolveToken`
+            try {
+              const { id } = <any>jwt.verify(token, process.env.SECRET_KEY!)
+              return {
+                id: id,
+              }
+            } catch (err) {
+              throw new ApiGateway.Errors.UnAuthorizedError(
+                ApiGateway.Errors.ERR_INVALID_TOKEN,
+                {
+                  error: "Invalid Token",
+                }
+              )
+            }
+          } else {
+            // No token. Throw an error or do nothing if anonymous access is allowed.
+            throw new ApiGateway.Errors.UnAuthorizedError(
+              ApiGateway.Errors.ERR_NO_TOKEN,
+              {
+                error: "Missing token",
+              }
+            )
+          }
+        },
         /**
 				 * Authorize the request. Check that the authenticated user has right to access the resource.
 				 *
