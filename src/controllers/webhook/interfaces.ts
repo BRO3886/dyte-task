@@ -9,3 +9,7 @@ export interface WebhookCreateResponse {
 export interface WebhooksListResponse {
   data: Array<Webhook>
 }
+
+export interface WebhookTriggerResponse {
+  data: string
+}

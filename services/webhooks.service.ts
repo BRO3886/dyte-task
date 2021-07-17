@@ -1,14 +1,17 @@
-import { Prisma, PrismaClient } from "@prisma/client"
+import { isIP } from "net"
+import { Prisma, PrismaClient, Webhook } from "@prisma/client"
 import { Service, ServiceBroker, Context } from "moleculer"
 import ApiGatewayService from "moleculer-web"
 import { v4 as uuid4 } from "uuid"
 import { URL } from "url"
-import { DatabaseError, DoesNotExistErr, UpdateErr } from "../errors"
+import { DatabaseError, UpdateErr } from "../errors"
 import {
   WebhookCreateResponse,
   WebhooksListResponse,
+  WebhookTriggerResponse,
 } from "../src/controllers/webhook/interfaces"
 import log from "../src/logging/logger"
+import { SendMessage } from "../src/controllers/webhook/webhook"
 
 export default class WebhooksService extends Service {
   db = new PrismaClient()
@@ -18,19 +21,6 @@ export default class WebhooksService extends Service {
     this.parseServiceSchema({
       name: "webhooks",
       actions: {
-        /**
-         * Welcome, a username
-         */
-        welcome: {
-          rest: "/welcome",
-          params: {
-            name: "string",
-          },
-          async handler(ctx: Context<{ name: string }>): Promise<string> {
-            return this.ActionWelcome(ctx.params.name)
-          },
-        },
-
         /**
          * Register a webhook
          */
@@ -88,56 +78,47 @@ export default class WebhooksService extends Service {
           async handler(
             ctx: Context<{ own: string }, { user: { id: string } }>
           ): Promise<WebhooksListResponse> {
-            let boolOwn: boolean
-            if (ctx.params.own == "true") {
-              boolOwn = true
-            } else if (ctx.params.own == "false") {
-              boolOwn = false
-            } else {
-              throw new ApiGatewayService.Errors.BadRequestError(
-                "bad query param",
-                [
-                  {
-                    message: "bad request",
-                    error: "'own' should be either 'true' or 'false'",
-                  },
-                ]
-              )
-            }
-
+            var boolOwn: boolean = this.getBool(ctx.params.own)
             return this.ListWebhooks(boolOwn, ctx.meta.user.id)
+          },
+        },
+
+        trigger: {
+          rest: {
+            path: "/trigger",
+            method: "POST",
+          },
+          params: {
+            own: "string",
+            ipAddr: "string",
+          },
+          async handler(
+            ctx: Context<
+              { own: string; ipAddr: string },
+              { user: { id: string } }
+            >
+          ): Promise<WebhookTriggerResponse> {
+            var boolOwn: boolean = this.getBool(ctx.params.own)
+            return this.TriggerSend(
+              boolOwn,
+              ctx.meta.user.id,
+              ctx.params.ipAddr
+            )
           },
         },
       },
       hooks: {
         before: {
           register: (ctx: Context<{ uri: string }>) => {
-            try {
-              var _ = new URL(ctx.params.uri)
-            } catch (err) {
-              throw new ApiGatewayService.Errors.BadRequestError(
-                "register webhook",
-                [
-                  {
-                    error: "not a valid url string",
-                  },
-                ]
-              )
-            }
+            this.validateURL(ctx.params.uri)
           },
           update: (ctx: Context<{ newTargetURL: string }>) => {
-            try {
-              var _ = new URL(ctx.params.newTargetURL)
-            } catch (err) {
-              throw new ApiGatewayService.Errors.BadRequestError(
-                "register webhook",
-                [
-                  {
-                    error: "not a valid url string",
-                  },
-                ]
-              )
-            }
+            this.validateURL(ctx.params.newTargetURL)
+          },
+          trigger: (
+            ctx: Context<{ ipAddr: string }, { user: { id: string } }>
+          ) => {
+            this.validateIP(ctx.params.ipAddr)
           },
         },
       },
@@ -237,12 +218,105 @@ export default class WebhooksService extends Service {
     }
   }
 
-  // Action
-  public ActionHello(): string {
-    return "Hello webhooks"
+  public async TriggerSend(
+    own: boolean,
+    id: string,
+    ip: string
+  ): Promise<WebhookTriggerResponse> {
+    try {
+      let q: Prisma.WebhookFindManyArgs = {}
+
+      if (own) {
+        q = {
+          where: {
+            adminID: id,
+          },
+          select: {
+            url: true,
+          },
+        }
+      } else {
+        q = {
+          select: {
+            url: true,
+          },
+        }
+      }
+
+      const webhooks = await this.db.webhook.findMany(q)
+      const batchSize = parseInt(process.env.TRIGGER_BATCH_SIZE)
+
+      var chunks = this.getChunks(webhooks, batchSize)
+
+      chunks.forEach(async (arr) => {
+        await SendMessage(ip, arr)
+      })
+
+      return {
+        data: "sent",
+      }
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        log.error(err)
+        throw new UpdateErr(err.meta)
+      }
+
+      throw new DatabaseError()
+    }
   }
 
-  public ActionWelcome(name: string): string {
-    return `Welcome, ${name}`
+  private getChunks(
+    webhooks: Array<Webhook>,
+    batchSize: number
+  ): Array<Array<Webhook>> {
+    var chunks: Array<Array<Webhook>> = [],
+      i = 0,
+      n = webhooks.length
+
+    while (i < n) {
+      chunks.push(webhooks.slice(i, (i += batchSize)))
+    }
+
+    return chunks
+  }
+
+  private getBool(val: string): boolean {
+    let boolVal: boolean
+    if (val == "true") {
+      boolVal = true
+    } else if (val == "false") {
+      boolVal = false
+    } else {
+      throw new ApiGatewayService.Errors.BadRequestError("bad query param", [
+        {
+          message: "bad request",
+          error: "'own' should be either 'true' or 'false'",
+        },
+      ])
+    }
+
+    return boolVal
+  }
+
+  private validateURL(url: string) {
+    try {
+      var _ = new URL(url)
+    } catch (err) {
+      throw new ApiGatewayService.Errors.BadRequestError("register webhook", [
+        {
+          error: "not a valid url string",
+        },
+      ])
+    }
+  }
+
+  private validateIP(ip: string) {
+    if (!isIP(ip)) {
+      throw new ApiGatewayService.Errors.BadRequestError("trigger webhook", [
+        {
+          error: "not a valid IP address",
+        },
+      ])
+    }
   }
 }

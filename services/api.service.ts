@@ -46,34 +46,6 @@ export default class ApiService extends Service {
             autoAliases: true,
 
             aliases: {},
-            /**
-					 * Before call hook. You can check the request.
-					 * @param {Context} ctx
-					 * @param {Object} route
-					 * @param {IncomingMessage} req
-					 * @param {ServerResponse} res
-					 * @param {Object} data
-					onBeforeCall(ctx: Context<any,{userAgent: string}>,
-					 route: object, req: IncomingMessage, res: ServerResponse) {
-					  Set request headers to context meta
-					  ctx.meta.userAgent = req.headers["user-agent"];
-					},
-					 */
-
-            /**
-					 * After call hook. You can modify the data.
-					 * @param {Context} ctx
-					 * @param {Object} route
-					 * @param {IncomingMessage} req
-					 * @param {ServerResponse} res
-					 * @param {Object} data
-					 *
-					 onAfterCall(ctx: Context, route: object, req: IncomingMessage, res: ServerResponse, data: object) {
-					// Async function which return with Promise
-					return doSomething(ctx, res, data);
-				},
-					 */
-
             // Calling options. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Calling-options
             callingOptions: {},
 
@@ -168,31 +140,6 @@ export default class ApiService extends Service {
             )
           }
         },
-        /**
-				 * Authorize the request. Check that the authenticated user has right to access the resource.
-				 *
-				 * PLEASE NOTE, IT'S JUST AN EXAMPLE IMPLEMENTATION. DO NOT USE IN PRODUCTION!
-				 *
-				 * @param {Context} ctx
-				 * @param {Object} route
-				 * @param {IncomingMessage} req
-				 * @returns {Promise}
-
-				async authorize (ctx: Context < any, {
-					user: string;
-				} > , route: Record<string, undefined>, req: IncomingMessage): Promise < any > => {
-					// Get the authenticated user.
-					const user = ctx.meta.user;
-
-					// It check the `auth` property in action schema.
-					// @ts-ignore
-					if (req.$action.auth === "required" && !user) {
-						throw new ApiGateway.Errors.UnAuthorizedError("NO_RIGHTS", {
-							error: "Unauthorized",
-						});
-					}
-				},
-				 */
       },
     })
   }

@@ -1,34 +1,22 @@
-import { PrismaClient } from '@prisma/client'
-import log from '../../logging/logger'
-import { ApiResponse } from '../utils'
+import { Webhook } from "@prisma/client"
+import axios from "axios"
+import log from "../../logging/logger"
 
-interface WebhookFeatures {
-  create(url: string): Promise<ApiResponse>
-  list(onlyMine: boolean): Promise<ApiResponse>
-  update(id: string): Promise<ApiResponse>
-  delete(id: string): Promise<ApiResponse>
-}
+const getUnixTimeStamp = () => Math.floor(new Date().getTime() / 1000)
 
-class WebhookController implements WebhookFeatures {
-  db!: PrismaClient
+export const SendMessage = async (msg: string, webhooks: Webhook[]) => {
+  //filter unique
+  let list = new Set(webhooks)
 
-  constructor(db: PrismaClient) {
-    this.db = db
-  }
+  let ts = getUnixTimeStamp()
 
-  async create(url: string): Promise<ApiResponse> {
-    throw new Error('Method not implemented.')
-  }
+  const reqList = [...list].map(
+    (webhook) => () =>
+      axios.post(webhook.url, {
+        content: JSON.stringify({ ip: msg, ts: ts }),
+      })
+  )
 
-  async list(onlyMine: boolean): Promise<ApiResponse> {
-    throw new Error('Method not implemented.')
-  }
-
-  async update(id: string): Promise<ApiResponse> {
-    throw new Error('Method not implemented.')
-  }
-
-  async delete(id: string): Promise<ApiResponse> {
-    throw new Error('Method not implemented.')
-  }
+  const respList = await Promise.all(reqList.map((req) => req()))
+  log.info(`sent ${respList.filter((val) => val.status == 204).length}`)
 }
