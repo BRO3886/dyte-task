@@ -5,11 +5,11 @@ import webhooksRouter from './webhooks'
 
 const router = express.Router()
 
-router.get('/api', (req, res) => {
+router.get('/', (req, res) => {
   res.status(200).json({ ping: 'pong' })
 })
 
 router.use('/admin', adminRouter)
-router.use('/webhook', verifyToken, webhooksRouter)
+router.use('/webhooks', verifyToken, webhooksRouter)
 
 export default router
