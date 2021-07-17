@@ -51,6 +51,6 @@ var exampleProtectedRoute: ReqRes<ApiResponse> = async (req, res) => {
 
 adminRouter.post("/create", createRoute)
 adminRouter.post("/login", loginRoute)
-adminRouter.use("", verifyToken, exampleProtectedRoute)
+adminRouter.get("/", verifyToken, exampleProtectedRoute)
 
 export default adminRouter
