@@ -11,9 +11,9 @@ Dyte's take home task for backend development.
 
 
 ## TODOs:
-- [] test retry logic properly (I'm sure interceptor method is wrong)
-- [] dockerize
-- [] Postman Docs
+- [ ] test retry logic properly (I'm sure interceptor method is wrong)
+- [ ] dockerize
+- [ ] Postman Docs
 
 
 ## NPM scripts
