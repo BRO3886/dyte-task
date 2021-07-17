@@ -13,3 +13,16 @@ export class DatabaseError extends Error {
     })
   }
 }
+export class DoesNotExistErr extends Error {
+  constructor() {
+    super("does not exist", 404, "errors.doesNoExist", {
+      error: "That record with that ID not exist.",
+    })
+  }
+}
+
+export class UpdateErr extends Error {
+  constructor(reason: any) {
+    super("update error", 404, "errors.updateErr", reason)
+  }
+}

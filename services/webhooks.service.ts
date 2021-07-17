@@ -1,11 +1,12 @@
-import { PrismaClient } from "@prisma/client"
+import { Prisma, PrismaClient } from "@prisma/client"
 import { Service, ServiceBroker, Context } from "moleculer"
 import ApiGatewayService from "moleculer-web"
 import { v4 as uuid4 } from "uuid"
 import { URL } from "url"
-import { DatabaseError } from "../errors"
+import { DatabaseError, DoesNotExistErr, UpdateErr } from "../errors"
 import { WebhookCreateResponse } from "../src/controllers/webhook/interfaces"
 import log from "../src/logging/logger"
+import { where } from "sequelize"
 
 export default class WebhooksService extends Service {
   db = new PrismaClient()
@@ -46,7 +47,7 @@ export default class WebhooksService extends Service {
          * Register a webhook
          */
         register: {
-          rest: "/register",
+          rest: "POST /register",
           params: {
             uri: "string",
           },
@@ -59,12 +60,43 @@ export default class WebhooksService extends Service {
             return this.CreateWebhook(ctx.params.uri, ctx.meta.user.id)
           },
         },
+        /**
+         * Register a webhook
+         */
+        update: {
+          rest: "PUT /:id/update",
+          params: {
+            id: "string",
+            newTargetURL: "string",
+          },
+          async handler(
+            ctx: Context<{ id: string; newTargetURL: string }>
+          ): Promise<WebhookCreateResponse> {
+            // @ts-ignore
+            ctx.meta.$statusCode = 200
+            return this.UpdateWebhook(ctx.params.id, ctx.params.newTargetURL)
+          },
+        },
       },
       hooks: {
         before: {
           register: (ctx: Context<{ uri: string }>) => {
             try {
               var _ = new URL(ctx.params.uri)
+            } catch (err) {
+              throw new ApiGatewayService.Errors.BadRequestError(
+                "register webhook",
+                [
+                  {
+                    error: "not a valid url string",
+                  },
+                ]
+              )
+            }
+          },
+          update: (ctx: Context<{ newTargetURL: string }>) => {
+            try {
+              var _ = new URL(ctx.params.newTargetURL)
             } catch (err) {
               throw new ApiGatewayService.Errors.BadRequestError(
                 "register webhook",
@@ -100,6 +132,34 @@ export default class WebhooksService extends Service {
       }
     } catch (err) {
       log.error(err)
+      throw new DatabaseError()
+    }
+  }
+
+  public async UpdateWebhook(
+    webhookID: string,
+    newURL: string
+  ): Promise<WebhookCreateResponse> {
+    try {
+      const updated = await this.db.webhook.update({
+        data: {
+          url: newURL,
+        },
+        where: {
+          id: webhookID,
+        },
+      })
+
+      return {
+        uri: updated.url,
+        id: updated.id,
+      }
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        log.error(err)
+        throw new UpdateErr(err.meta)
+      }
+
       throw new DatabaseError()
     }
   }
