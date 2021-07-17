@@ -38,7 +38,8 @@ export const SendMessage = async (msg: string, webhooks: Webhook[]) => {
       })
   )
 
-  let n = axios.interceptors.response.use(null, (error) => {
+  //retry logic
+  axios.interceptors.response.use(null, (error) => {
     if ((error.config && error.response.status != 200) || error.response.status != 204) {
       return axios.request(error.config)
     }
@@ -47,6 +48,7 @@ export const SendMessage = async (msg: string, webhooks: Webhook[]) => {
   await Promise.all(
     reqList.map((req, idx) => {
       req()
+        //TODO: remove later
         .then((res) => {
           log.info(res.status)
         })

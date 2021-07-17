@@ -1,7 +1,7 @@
 [![Moleculer](https://badgen.net/badge/Powered%20by/Moleculer/0e83cd)](https://moleculer.services)
 
 # Dyte Backend Task
-Dyte's take home task for backend.
+Dyte's take home task for backend development.
 ## Info
 * Uses Express as backend. 
 * Runs Moleculer API Gateway in middleware mode on express. [[Link](https://moleculer.services/docs/0.12/moleculer-web.html#ExpressJS-middleware-usage)]
@@ -10,9 +10,13 @@ Dyte's take home task for backend.
 * Written in TypeScript (obv)
 
 
+## TODOs:
+- [] test retry logic properly (I'm sure interceptor method is wrong)
+- [] dockerize
+- [] Postman Docs
+
 
 ## NPM scripts
-
 - `npm run dev`: Start development mode (load all services locally)
 - `npm run start`: Start production mode (set `SERVICES` env variable to load certain services)
 - `npm run cli`: Start a CLI and connect to production. Don't forget to set production namespace with `--ns` argument in script
