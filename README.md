@@ -17,8 +17,8 @@ Dyte's take home task for backend development.
 
 
 ## NPM scripts
-- `npm run dev`: Start development mode (load all services locally)
-- `npm run start`: Start production mode (set `SERVICES` env variable to load certain services)
+- `npm run build`: Transpiles TS to JS
+- `npm run start`: starts the moleculer and express servers
 - `npm run cli`: Start a CLI and connect to production. Don't forget to set production namespace with `--ns` argument in script
 - `npm run dc:up`: Start the stack with Docker Compose
 - `npm run dc:down`: Stop the stack with Docker Compose

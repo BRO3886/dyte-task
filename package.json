@@ -4,7 +4,7 @@
   "description": "An API with Express and Moleculer. Dyte's take home task.",
   "scripts": {
     "build": "tsc --build tsconfig.json",
-    "start": "node dist/src/server.js",
+    "start": "npm run build && node dist/src/server.js",
     "cli": "moleculer connect NATS",
     "dc:up": "docker-compose up --build -d",
     "dc:logs": "docker-compose logs -f",
