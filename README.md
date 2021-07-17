@@ -15,6 +15,22 @@ Dyte's take home task for backend development.
 * Written in TypeScript. (obv)
 * [Postman Collection(JSON) here](https://www.getpostman.com/collections/d6e6df0a246d12f7f4b5)
 
+## Instructions To Run
+* Install dependencies
+```
+npm install
+```
+* Run Postgres (remember to set env vars!)
+* Perform DB migrations with prisma
+```
+npx prisma migrate dev
+npx prisma generate
+```
+* Start the server (also transpiles TS to dist/)
+```
+npm start
+```
+
 ## NPM scripts
 - `npm run build`: Transpiles TS to JS
 - `npm run start`: starts the moleculer and express servers
