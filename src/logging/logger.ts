@@ -1,16 +1,13 @@
-import winston from 'winston'
+import winston from "winston"
 
 const log = winston.createLogger({
-  level: 'silly',
+  level: "silly",
   format: winston.format.json(),
   transports: [
     new winston.transports.Console({
-      level: 'silly',
+      level: "silly",
       handleExceptions: true,
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   ],
 })

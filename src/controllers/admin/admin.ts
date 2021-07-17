@@ -1,9 +1,9 @@
-import bcrypt from 'bcryptjs'
-import { v4 as uuid4 } from 'uuid'
-import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
-import log from '../../logging/logger'
-import { ApiResponse } from '../utils'
+import bcrypt from "bcryptjs"
+import { v4 as uuid4 } from "uuid"
+import jwt from "jsonwebtoken"
+import { PrismaClient } from "@prisma/client"
+import log from "../../logging/logger"
+import { ApiResponse } from "../utils"
 
 interface AdminFeatures {
   register(username: string, password: string): Promise<ApiResponse>
@@ -26,7 +26,7 @@ class AdminController implements AdminFeatures {
       if (!exists) {
         return {
           code: 404,
-          message: 'User does not exist',
+          message: "User does not exist",
         }
       }
 
@@ -34,7 +34,7 @@ class AdminController implements AdminFeatures {
       if (!match) {
         return {
           code: 401,
-          message: 'Incorrect username or password combination',
+          message: "Incorrect username or password combination",
         }
       }
 
@@ -47,7 +47,7 @@ class AdminController implements AdminFeatures {
 
       return {
         code: 200,
-        message: 'logged in',
+        message: "logged in",
         data: {
           id: exists.id,
           token: token,
@@ -68,13 +68,11 @@ class AdminController implements AdminFeatures {
       if (exists) {
         return {
           code: 409,
-          message: 'User already exists',
+          message: "User already exists",
         }
       }
 
-      const salt = await bcrypt.genSalt(
-        parseInt(<string>process.env.SALT_ROUNDS)
-      )
+      const salt = await bcrypt.genSalt(parseInt(<string>process.env.SALT_ROUNDS))
 
       const pwd = await bcrypt.hash(password, salt)
 
@@ -88,7 +86,7 @@ class AdminController implements AdminFeatures {
 
       return {
         code: 201,
-        message: 'Admin created',
+        message: "Admin created",
         data: {
           id: admin.id,
           username: admin.username,
@@ -104,7 +102,7 @@ function handleError(err: any): ApiResponse {
   log.error(err)
   return {
     code: 500,
-    message: 'something went wrong',
+    message: "something went wrong",
     data: {
       error: err.toString(),
     },

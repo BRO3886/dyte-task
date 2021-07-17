@@ -1,15 +1,15 @@
-import { Response, Request, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
+import { Response, Request, NextFunction } from "express"
+import jwt from "jsonwebtoken"
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = <string>req.headers['authorization']
+  const authHeader = <string>req.headers["authorization"]
   if (!authHeader) {
-    return res.status(401).json({ message: 'token missing' })
+    return res.status(401).json({ message: "token missing" })
   }
 
-  const token: string = authHeader.split(' ')[1]
+  const token: string = authHeader.split(" ")[1]
   if (token == null) {
-    return res.status(401).json({ message: 'Unauthorized' })
+    return res.status(401).json({ message: "Unauthorized" })
   }
 
   try {
@@ -17,7 +17,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
     res.locals.uid = id
     next()
   } catch (err) {
-    return res.status(401).json({ message: 'possibly malformed token' })
+    return res.status(401).json({ message: "possibly malformed token" })
   }
 }
 

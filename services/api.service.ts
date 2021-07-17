@@ -3,7 +3,6 @@ import { Service, ServiceBroker, Context } from "moleculer"
 import ApiGateway from "moleculer-web"
 import jwt from "jsonwebtoken"
 import app from "../src/app"
-import log from "../src/logging/logger"
 
 export default class ApiService extends Service {
   public constructor(broker: ServiceBroker) {
@@ -81,11 +80,7 @@ export default class ApiService extends Service {
           res.status(err.code || 500)
           res.end(
             JSON.stringify(
-              err.data
-                ? err.data.length > 0
-                  ? err.data[0]
-                  : err.data
-                : { message: "something went wrong" }
+              err.data ? (err.data.length > 0 ? err.data[0] : err.data) : { message: "something went wrong" }
             )
           )
         },
@@ -102,11 +97,7 @@ export default class ApiService extends Service {
          * @param {IncomingMessage} req
          * @returns {Promise}
          */
-        async authenticate(
-          ctx: Context,
-          route: any,
-          req: IncomingMessage
-        ): Promise<any> {
+        async authenticate(ctx: Context, route: any, req: IncomingMessage): Promise<any> {
           // Read the token from header
           const auth = req.headers.authorization
 
@@ -120,21 +111,15 @@ export default class ApiService extends Service {
                 id: id,
               }
             } catch (err) {
-              throw new ApiGateway.Errors.UnAuthorizedError(
-                ApiGateway.Errors.ERR_INVALID_TOKEN,
-                {
-                  error: "Invalid Token",
-                }
-              )
+              throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN, {
+                error: "Invalid Token",
+              })
             }
           } else {
             // No token. Throw an error or do nothing if anonymous access is allowed.
-            throw new ApiGateway.Errors.UnAuthorizedError(
-              ApiGateway.Errors.ERR_NO_TOKEN,
-              {
-                error: "Missing token",
-              }
-            )
+            throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_NO_TOKEN, {
+              error: "Missing token",
+            })
           }
         },
       },

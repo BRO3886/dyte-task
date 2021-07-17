@@ -33,9 +33,7 @@ export default class WebhooksService extends Service {
           params: {
             uri: "string",
           },
-          async handler(
-            ctx: Context<{ uri: string }>
-          ): Promise<WebhookCreateResponse> {
+          async handler(ctx: Context<{ uri: string }>): Promise<WebhookCreateResponse> {
             // @ts-ignore
             ctx.meta.$statusCode = 201
             // @ts-ignore
@@ -55,9 +53,7 @@ export default class WebhooksService extends Service {
             id: "string",
             newTargetURL: "string",
           },
-          async handler(
-            ctx: Context<{ id: string; newTargetURL: string }>
-          ): Promise<WebhookCreateResponse> {
+          async handler(ctx: Context<{ id: string; newTargetURL: string }>): Promise<WebhookCreateResponse> {
             // @ts-ignore
             ctx.meta.$statusCode = 200
             return this.UpdateWebhook(ctx.params.id, ctx.params.newTargetURL)
@@ -93,17 +89,10 @@ export default class WebhooksService extends Service {
             ipAddr: "string",
           },
           async handler(
-            ctx: Context<
-              { own: string; ipAddr: string },
-              { user: { id: string } }
-            >
+            ctx: Context<{ own: string; ipAddr: string }, { user: { id: string } }>
           ): Promise<WebhookTriggerResponse> {
             var boolOwn: boolean = this.getBool(ctx.params.own)
-            return this.TriggerSend(
-              boolOwn,
-              ctx.meta.user.id,
-              ctx.params.ipAddr
-            )
+            return this.TriggerSend(boolOwn, ctx.meta.user.id, ctx.params.ipAddr)
           },
         },
       },
@@ -115,9 +104,7 @@ export default class WebhooksService extends Service {
           update: (ctx: Context<{ newTargetURL: string }>) => {
             this.validateURL(ctx.params.newTargetURL)
           },
-          trigger: (
-            ctx: Context<{ ipAddr: string }, { user: { id: string } }>
-          ) => {
+          trigger: (ctx: Context<{ ipAddr: string }, { user: { id: string } }>) => {
             this.validateIP(ctx.params.ipAddr)
           },
         },
@@ -125,10 +112,7 @@ export default class WebhooksService extends Service {
     })
   }
 
-  public async CreateWebhook(
-    uri: string,
-    adminID: string
-  ): Promise<WebhookCreateResponse> {
+  public async CreateWebhook(uri: string, adminID: string): Promise<WebhookCreateResponse> {
     try {
       const created = await this.db.webhook.create({
         data: {
@@ -150,10 +134,7 @@ export default class WebhooksService extends Service {
     }
   }
 
-  public async UpdateWebhook(
-    webhookID: string,
-    newURL: string
-  ): Promise<WebhookCreateResponse> {
+  public async UpdateWebhook(webhookID: string, newURL: string): Promise<WebhookCreateResponse> {
     try {
       const updated = await this.db.webhook.update({
         data: {
@@ -177,10 +158,7 @@ export default class WebhooksService extends Service {
     }
   }
 
-  public async ListWebhooks(
-    own: boolean,
-    adminID: string
-  ): Promise<WebhooksListResponse> {
+  public async ListWebhooks(own: boolean, adminID: string): Promise<WebhooksListResponse> {
     try {
       let q: Prisma.WebhookFindManyArgs = {}
 
@@ -218,11 +196,7 @@ export default class WebhooksService extends Service {
     }
   }
 
-  public async TriggerSend(
-    own: boolean,
-    id: string,
-    ip: string
-  ): Promise<WebhookTriggerResponse> {
+  public async TriggerSend(own: boolean, id: string, ip: string): Promise<WebhookTriggerResponse> {
     try {
       let q: Prisma.WebhookFindManyArgs = {}
 
@@ -265,10 +239,7 @@ export default class WebhooksService extends Service {
     }
   }
 
-  private getChunks(
-    webhooks: Array<Webhook>,
-    batchSize: number
-  ): Array<Array<Webhook>> {
+  private getChunks(webhooks: Array<Webhook>, batchSize: number): Array<Array<Webhook>> {
     var chunks: Array<Array<Webhook>> = [],
       i = 0,
       n = webhooks.length
