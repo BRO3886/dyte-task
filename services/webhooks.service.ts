@@ -1,17 +1,17 @@
-import { isIP } from "net"
 import { Prisma, PrismaClient, Webhook } from "@prisma/client"
-import { Service, ServiceBroker, Context } from "moleculer"
+import { Context, Service, ServiceBroker } from "moleculer"
 import ApiGatewayService from "moleculer-web"
-import { v4 as uuid4 } from "uuid"
+import { isIP } from "net"
 import { URL } from "url"
+import { v4 as uuid4 } from "uuid"
 import { DatabaseError, UpdateErr } from "../errors"
 import {
   WebhookCreateResponse,
   WebhooksListResponse,
-  WebhookTriggerResponse,
+  WebhookTriggerResponse
 } from "../src/controllers/webhook/interfaces"
-import log from "../src/logging/logger"
 import { SendMessage } from "../src/controllers/webhook/webhook"
+import log from "../src/logging/logger"
 
 export default class WebhooksService extends Service {
   db = new PrismaClient()

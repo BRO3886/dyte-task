@@ -1,10 +1,10 @@
 // import cors from 'cors'
+import * as dotenv from "dotenv"
 import express from "express"
 import log from "./logging/logger"
 import requestLogger from "./logging/morgan"
-import router from "./routes"
-import * as dotenv from "dotenv"
 import { checkAdmin } from "./middleware/admin"
+import router from "./routes"
 
 dotenv.config()
 
@@ -31,6 +31,7 @@ app.use(checkAdmin)
 app.use(express.urlencoded({ extended: true }))
 // morgan
 app.use(requestLogger)
+
 //router
 app.use("/api", router)
 
