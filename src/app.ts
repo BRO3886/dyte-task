@@ -3,6 +3,9 @@ import express from 'express'
 import log from './logging/logger'
 import requestLogger from './logging/morgan'
 import router from './routes'
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 
 const app = express()
 
@@ -12,8 +15,8 @@ app.use((req, res, next) => {
   express.json()(req, res, (err) => {
     if (err) {
       log.error(err)
-      return res.status(400).json({
-        code: 400,
+      return res.status(422).json({
+        code: 422,
         message: 'possibly malformed body',
       })
     }

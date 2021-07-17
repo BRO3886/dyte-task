@@ -9,7 +9,7 @@ router.get('/api', (req, res) => {
   res.status(200).json({ ping: 'pong' })
 })
 
-router.use('/api/v1/admin', adminRouter)
-router.use('/api/v1/webhook', verifyToken, webhooksRouter)
+router.use('/admin', adminRouter)
+router.use('/webhook', verifyToken, webhooksRouter)
 
 export default router
