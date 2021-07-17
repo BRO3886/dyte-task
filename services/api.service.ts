@@ -110,7 +110,15 @@ export default class ApiService extends Service {
         onError(req: any, res: any, err: any) {
           res.setHeader("Content-Type", "application/json")
           res.status(err.code || 500)
-          res.end(JSON.stringify(err.data[0]))
+          res.end(
+            JSON.stringify(
+              err.data
+                ? err.data.length > 0
+                  ? err.data[0]
+                  : err.data
+                : { message: "something went wrong" }
+            )
+          )
         },
       },
 

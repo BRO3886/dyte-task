@@ -8,7 +8,8 @@
     "sourceMap": true,
     "pretty": true,
     "target": "es6",
-    "outDir": "dist"
+    "outDir": "dist",
+    "plugins": [{ "transform": "ts-transformer-enumerate/transformer" }]
   },
   "include": ["./**/*"],
   "exclude": ["node_modules/**/*", "test"]

@@ -54,6 +54,8 @@ export default class WebhooksService extends Service {
             ctx: Context<{ uri: string }>
           ): Promise<WebhookCreateResponse> {
             // @ts-ignore
+            ctx.meta.$statusCode = 201
+            // @ts-ignore
             return this.CreateWebhook(ctx.params.uri, ctx.meta.user.id)
           },
         },
@@ -83,7 +85,6 @@ export default class WebhooksService extends Service {
     uri: string,
     adminID: string
   ): Promise<WebhookCreateResponse> {
-    log.info(adminID)
     try {
       const created = await this.db.webhook.create({
         data: {
@@ -92,8 +93,6 @@ export default class WebhooksService extends Service {
           adminID: adminID,
         },
       })
-
-      log.info(created.adminID)
 
       return {
         uri: created.url,
