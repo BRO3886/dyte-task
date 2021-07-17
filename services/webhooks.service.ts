@@ -4,7 +4,7 @@ import ApiGatewayService from "moleculer-web"
 import { isIP } from "net"
 import { URL } from "url"
 import { v4 as uuid4 } from "uuid"
-import { DatabaseError, UpdateErr } from "../errors"
+import { DatabaseError, UpdateErr } from "../src/errors"
 import {
   WebhookCreateResponse,
   WebhooksListResponse,
