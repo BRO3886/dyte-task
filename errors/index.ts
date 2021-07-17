@@ -26,3 +26,9 @@ export class UpdateErr extends Error {
     super("update error", 404, "errors.updateErr", reason)
   }
 }
+
+export class FetchErr extends Error {
+  constructor(reason: any) {
+    super("fetch error", 404, "errors.updateErr", reason)
+  }
+}

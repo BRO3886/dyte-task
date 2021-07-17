@@ -4,9 +4,11 @@ import ApiGatewayService from "moleculer-web"
 import { v4 as uuid4 } from "uuid"
 import { URL } from "url"
 import { DatabaseError, DoesNotExistErr, UpdateErr } from "../errors"
-import { WebhookCreateResponse } from "../src/controllers/webhook/interfaces"
+import {
+  WebhookCreateResponse,
+  WebhooksListResponse,
+} from "../src/controllers/webhook/interfaces"
 import log from "../src/logging/logger"
-import { where } from "sequelize"
 
 export default class WebhooksService extends Service {
   db = new PrismaClient()
@@ -16,20 +18,6 @@ export default class WebhooksService extends Service {
     this.parseServiceSchema({
       name: "webhooks",
       actions: {
-        /**
-         * Say a 'Hello' action.
-         *
-         */
-        hello: {
-          rest: {
-            method: "GET",
-            path: "/",
-          },
-          async handler(): Promise<string> {
-            return this.ActionHello()
-          },
-        },
-
         /**
          * Welcome, a username
          */
@@ -47,7 +35,11 @@ export default class WebhooksService extends Service {
          * Register a webhook
          */
         register: {
-          rest: "POST /register",
+          rest: {
+            path: "/register",
+            method: "POST",
+          },
+
           params: {
             uri: "string",
           },
@@ -64,7 +56,11 @@ export default class WebhooksService extends Service {
          * Register a webhook
          */
         update: {
-          rest: "PUT /:id/update",
+          rest: {
+            path: "/:id/update",
+            method: "PATCH",
+          },
+
           params: {
             id: "string",
             newTargetURL: "string",
@@ -75,6 +71,41 @@ export default class WebhooksService extends Service {
             // @ts-ignore
             ctx.meta.$statusCode = 200
             return this.UpdateWebhook(ctx.params.id, ctx.params.newTargetURL)
+          },
+        },
+
+        /**
+         * List all webhooks in DB
+         */
+        list: {
+          rest: {
+            path: "/",
+            method: "GET",
+          },
+          params: {
+            own: "string",
+          },
+          async handler(
+            ctx: Context<{ own: string }, { user: { id: string } }>
+          ): Promise<WebhooksListResponse> {
+            let boolOwn: boolean
+            if (ctx.params.own == "true") {
+              boolOwn = true
+            } else if (ctx.params.own == "false") {
+              boolOwn = false
+            } else {
+              throw new ApiGatewayService.Errors.BadRequestError(
+                "bad query param",
+                [
+                  {
+                    message: "bad request",
+                    error: "'own' should be either 'true' or 'false'",
+                  },
+                ]
+              )
+            }
+
+            return this.ListWebhooks(boolOwn, ctx.meta.user.id)
           },
         },
       },
@@ -127,8 +158,10 @@ export default class WebhooksService extends Service {
       })
 
       return {
-        uri: created.url,
-        id: created.id,
+        data: {
+          url: created.url,
+          id: created.id,
+        },
       }
     } catch (err) {
       log.error(err)
@@ -151,8 +184,48 @@ export default class WebhooksService extends Service {
       })
 
       return {
-        uri: updated.url,
-        id: updated.id,
+        data: { url: updated.url, id: updated.id },
+      }
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        log.error(err)
+        throw new UpdateErr(err.meta)
+      }
+
+      throw new DatabaseError()
+    }
+  }
+
+  public async ListWebhooks(
+    own: boolean,
+    adminID: string
+  ): Promise<WebhooksListResponse> {
+    try {
+      let q: Prisma.WebhookFindManyArgs = {}
+
+      if (own) {
+        q = {
+          where: {
+            adminID: adminID,
+          },
+          select: {
+            id: true,
+            url: true,
+          },
+        }
+      } else {
+        q = {
+          select: {
+            id: true,
+            url: true,
+          },
+        }
+      }
+
+      const webhooks = await this.db.webhook.findMany(q)
+
+      return {
+        data: webhooks,
       }
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {

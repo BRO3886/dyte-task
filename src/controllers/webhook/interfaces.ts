@@ -1,7 +1,11 @@
+import { Webhook } from "@prisma/client"
+
 export interface WebhookCreateResponse {
-  uri: string
-  id: string
+  data: {
+    url: string
+    id: string
+  }
 }
 export interface WebhooksListResponse {
-  data: Array<WebhookCreateResponse>
+  data: Array<Webhook>
 }
