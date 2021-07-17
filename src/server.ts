@@ -4,7 +4,7 @@ import log from "./logging/logger"
 import * as dotenv from "dotenv"
 import ApiService from "../services/api.service"
 import { ServiceBroker } from "moleculer"
-import brokerConfig from "../moleculer.config"
+import brokerConfig from "./config/moleculer.config"
 import WebhooksService from "../services/webhooks.service"
 
 dotenv.config()
