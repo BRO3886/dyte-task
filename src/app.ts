@@ -32,6 +32,6 @@ app.use(express.urlencoded({ extended: true }))
 // morgan
 app.use(requestLogger)
 //router
-app.use("/", router)
+app.use("/api", router)
 
 export default app

@@ -11,7 +11,7 @@ dotenv.config()
 
 const PORT: number = Number(process.env.PORT) || 8080
 
-log.info(`db: ${process.env.DB_NAME}`)
+log.debug(`using db: ${process.env.DB_NAME}`)
 
 const server = http.createServer(app)
 

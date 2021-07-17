@@ -81,7 +81,7 @@ export default class WebhooksService extends Service {
 
         trigger: {
           rest: {
-            path: "/trigger",
+            path: "/ip",
             method: "POST",
           },
           params: {
@@ -93,6 +93,19 @@ export default class WebhooksService extends Service {
           ): Promise<WebhookTriggerResponse> {
             var boolOwn: boolean = this.getBool(ctx.params.own)
             return this.TriggerSend(boolOwn, ctx.meta.user.id, ctx.params.ipAddr)
+          },
+        },
+
+        delete: {
+          rest: {
+            path: "/:id/delete",
+            method: "DELETE",
+          },
+          params: {
+            id: "string",
+          },
+          async handler(ctx: Context<{ id: string }>): Promise<WebhookCreateResponse> {
+            return this.DeleteWebhook(ctx.params.id)
           },
         },
       },
@@ -110,6 +123,31 @@ export default class WebhooksService extends Service {
         },
       },
     })
+  }
+
+  public async DeleteWebhook(id: string): Promise<WebhookCreateResponse> {
+    try {
+      const deleted = await this.db.webhook.delete({
+        where: {
+          id: id,
+        },
+      })
+
+      return {
+        data: {
+          id: deleted.id,
+          url: deleted.url,
+        },
+      }
+    } catch (err) {
+      log.error(err)
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        //@ts-ignore
+        throw new UpdateErr({ message: err.meta.cause })
+      }
+
+      throw new DatabaseError()
+    }
   }
 
   public async CreateWebhook(uri: string, adminID: string): Promise<WebhookCreateResponse> {
@@ -130,6 +168,10 @@ export default class WebhooksService extends Service {
       }
     } catch (err) {
       log.error(err)
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        //@ts-ignore
+        throw new UpdateErr({ message: err.meta.cause })
+      }
       throw new DatabaseError()
     }
   }
@@ -149,9 +191,10 @@ export default class WebhooksService extends Service {
         data: { url: updated.url, id: updated.id },
       }
     } catch (err) {
+      log.error(err)
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        log.error(err)
-        throw new UpdateErr(err.meta)
+        //@ts-ignore
+        throw new UpdateErr({ message: err.meta.cause })
       }
 
       throw new DatabaseError()
@@ -187,9 +230,10 @@ export default class WebhooksService extends Service {
         data: webhooks,
       }
     } catch (err) {
+      log.error(err)
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        log.error(err)
-        throw new UpdateErr(err.meta)
+        //@ts-ignore
+        throw new UpdateErr({ message: err.meta.cause })
       }
 
       throw new DatabaseError()
@@ -230,9 +274,10 @@ export default class WebhooksService extends Service {
         data: "sent",
       }
     } catch (err) {
+      log.error(err)
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        log.error(err)
-        throw new UpdateErr(err.meta)
+        //@ts-ignore
+        throw new UpdateErr({ message: err.meta.cause })
       }
 
       throw new DatabaseError()
