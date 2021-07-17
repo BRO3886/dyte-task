@@ -2,6 +2,7 @@ import app from './app'
 import http from 'http'
 import log from './logging/logger'
 import * as dotenv from 'dotenv'
+import ApiService from '../services/api.service'
 
 dotenv.config()
 

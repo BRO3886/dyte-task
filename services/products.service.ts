@@ -2,6 +2,7 @@
 import {Context, Service, ServiceBroker, ServiceSchema} from "moleculer";
 
 import DbConnection from "../mixins/db.mixin";
+import log from "../src/logging/logger";
 
 export default class ProductsService extends Service{
 
@@ -69,6 +70,7 @@ export default class ProductsService extends Service{
 						const doc = await this.adapter.updateById(ctx.params.id, { $inc: { quantity: ctx.params.value } });
 						const json = await this.transformDocuments(ctx, ctx.params, doc);
 						await this.entityChanged("updated", json, ctx);
+						
 
 						return json;
 					},

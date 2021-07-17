@@ -110,7 +110,7 @@ export default class ApiService extends Service {
         onError(req: any, res: any, err: any) {
           res.setHeader("Content-Type", "application/json")
           res.status(err.code || 500)
-          res.end(JSON.stringify(err.data))
+          res.end(JSON.stringify(err.data[0]))
         },
       },
 
@@ -119,8 +119,6 @@ export default class ApiService extends Service {
          * Authenticate the request. It checks the `Authorization` token value in the request header.
          * Check the token value & resolve the user by the token.
          * The resolved user will be available in `ctx.meta.user`
-         *
-         * PLEASE NOTE, IT'S JUST AN EXAMPLE IMPLEMENTATION. DO NOT USE IN PRODUCTION!
          *
          * @param {Context} ctx
          * @param {any} route
