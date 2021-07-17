@@ -7,6 +7,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY *.json package-lock.json ./
+RUN npm install --production
+RUN cp -RL packages/backend/node_modules/ /tmp/node_modules/
 
 # Copy source
 COPY . .
@@ -17,4 +19,4 @@ RUN npm run build \
   && npm prune
 
 # Start server
-CMD ["npx prisma mi","npm", "start", ]
+CMD ["npm", "start"]
