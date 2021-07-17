@@ -1,15 +1,14 @@
 version: "3.3"
 
 services:
-
   api:
     build:
       context: .
     image: webhooks
-    env_file: docker-compose.env
+    env_file: .env
     environment:
       SERVICES: api
-      PORT: 3000
+      PORT: 8000
     depends_on:
       - nats
     labels:
@@ -19,32 +18,20 @@ services:
     networks:
       - internal
 
-  greeter:
+  webhooks:
     build:
       context: .
     image: webhooks
-    env_file: docker-compose.env
+    env_file: .env
     environment:
-      SERVICES: greeter
+      SERVICES: webhooks
     depends_on:
+      - postgres
       - nats
     networks:
       - internal
 
-  products:
-    build:
-      context: .
-    image: webhooks
-    env_file: docker-compose.env
-    environment:
-      SERVICES: products
-    depends_on:
-      - mongo
-      - nats
-    networks:
-      - internal
-
-  mongo:
+  postgres:
     image: mongo:4
     volumes:
       - data:/data/db

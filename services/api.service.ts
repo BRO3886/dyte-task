@@ -13,9 +13,6 @@ export default class ApiService extends Service {
       name: "api",
       started: async () => {
         app.use("/api", this.express())
-        app.listen(Number.parseInt(process.env.PORT) | 8000, () => {
-          log.info(`started express server on ${process.env.PORT}`)
-        })
       },
       mixins: [ApiGateway],
       // More info about settings: https://moleculer.services/docs/0.14/moleculer-web.html

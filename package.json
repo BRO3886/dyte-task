@@ -1,7 +1,7 @@
 {
   "name": "webhooks",
   "version": "1.0.0",
-  "description": "Webhoox",
+  "description": "An API with Express and Moleculer. Dyte's take home task.",
   "scripts": {
     "build": "tsc --build tsconfig.json",
     "dev": "ts-node ./node_modules/moleculer/bin/moleculer-runner.js --config moleculer.config.ts services/**/*.service.ts",

@@ -1,11 +1,12 @@
 FROM node:lts-alpine
 
+RUN apt-get update && apt-get install --no-install-recommends --yes openssl
+
 # Working directory
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --silent
+COPY *.json package-lock.json ./
 
 # Copy source
 COPY . .
@@ -13,7 +14,7 @@ COPY . .
 # Build and cleanup
 ENV NODE_ENV=production
 RUN npm run build \
- && npm prune
+  && npm prune
 
 # Start server
-CMD ["npm", "start"]
+CMD ["npx prisma mi","npm", "start", ]
