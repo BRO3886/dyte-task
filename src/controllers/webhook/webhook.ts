@@ -33,33 +33,27 @@ export const SendMessage = async (msg: string, webhooks: Webhook[]) => {
   const reqList = [...list].map(
     (webhook) => () =>
       axios.post(webhook.url, {
+        ip: msg,
+        ts: ts,
         //TODO: discord testing - remove later
-        content: JSON.stringify({ ip: msg, ts: ts }),
+        // content: JSON.stringify({ip: msg, ts: ts}),
       })
   )
 
-  //retry logic
-  axios.interceptors.response.use(null, (error) => {
-    if ((error.config && error.response.status != 200) || error.response.status != 204) {
-      return axios.request(error.config)
-    }
-  })
-
   await Promise.all(
     reqList.map((req, idx) => {
-      req()
-        //TODO: remove later
-        .then((res) => {
-          log.info(res.status)
-        })
-        .catch((err) => {
-          log.error(err.response.status)
-          list[idx].sent = false
-          if (list[idx].retries < 5) {
-            list[idx].retries++
-            // TODO: write retry logic
-          }
-        })
+      req().catch((err) => {
+        log.error(err.response.status)
+        list[idx].sent = false
+        if (list[idx].retries < 5) {
+          list[idx].retries++
+          axios.interceptors.response.use(null, (error) => {
+            if ((error.config && error.response.status != 200) || error.response.status != 204) {
+              return axios.request(error.config)
+            }
+          })
+        }
+      })
     })
   )
 
@@ -67,6 +61,11 @@ export const SendMessage = async (msg: string, webhooks: Webhook[]) => {
 
   log.info(`not sent ${notSent.length}`)
 
-  //204 for discord testing. TODO: change to 200
-  log.info(`sent `)
+  log.info(
+    `sent ${
+      list.filter((item) => {
+        item.sent = true
+      }).length
+    }`
+  )
 }
